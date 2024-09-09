@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize'
-import { sequelize } from '../database/database.js'
+import { sequelize } from '../db/db.js'
+import { User } from './user.model.js'
 
 export const Hobby = sequelize.define('hobbies', {
     id: {
@@ -14,7 +15,17 @@ export const Hobby = sequelize.define('hobbies', {
     hobby_type: {
         type: DataTypes.ENUM('actividad', 'objeto'),
         allowNull: false
+    },
+    user_id: {
+        type: DataTypes.UUID,
+        references: {
+            model: 'users',
+            key: 'id'
+        }
     }
 }, {
     timestamps: true
 })
+
+User.hasMany(Hobby, { foreignKey: 'user_id' })
+Hobby.belongsTo(User, { foreignKey: 'user_id' })
