@@ -1,5 +1,7 @@
 import bcrypt from 'bcryptjs'
 import { User } from '../models/user.model.js'
+import { Op } from 'sequelize'
+import { createAccessToken } from '../libs/jwt.js'
 
 export const createAccount = async (req, res) => {
     const {
@@ -40,4 +42,36 @@ export const createAccount = async (req, res) => {
     } catch (error) {
         return res.status(500).json({ message: 'Error creating account' })
     }
-} 
+}
+
+export const loginAccount = async (req, res) => {
+    const { logger, password } = req.body
+
+    try {
+        if (!logger || !password) return res.status(400).json({ message: 'Campos vacíos' })
+        
+        const user = await User.findOne({
+            where: {
+                [Op.or]: [
+                    { nickname: logger },
+                    { email: logger }
+                ]
+            }
+        })
+
+        if (!user) return res.status(404).json({ message: 'Usuario no encontrado' })
+        
+        const isMatch = await bcrypt.compare(password, user.password)
+        if (!isMatch) return res.status(400).json({ message: 'Contraseña incorrecta' })
+        
+        const token = await createAccessToken(user)
+        res.setHeader('Authorization', token)
+        return res.status(200).json({
+            message: 'Inicio de sesión exitoso',
+            user: user,
+            token: token
+        })
+    } catch (error) {
+        return res.status(500).json({ message: 'Error creating account' })
+    }
+}
