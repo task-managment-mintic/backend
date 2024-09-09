@@ -75,3 +75,21 @@ export const loginAccount = async (req, res) => {
         return res.status(500).json({ message: 'Error creating account' })
     }
 }
+
+export const getProfile = async (req, res) => {
+    const { id } = req.user
+    
+    try {
+        const user = await User.findByPk(id, {
+            attributes: { exclude: ['id', 'password'] }
+        })
+        if (!user) return res.status(404).json({ message: ' El usuario no existe' })
+        
+        return res.status(200).json({
+            message: 'Solicitud exitosa',
+            user: user
+        })
+    } catch (error) {
+        return res.status(500).json({ message: 'Error getting profile' })
+    }
+}

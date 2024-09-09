@@ -6,17 +6,8 @@ const pwdToken = data.jwtToken
 export const createAccessToken = user => {
     const payload = {
         id: user.id,
-        first_name: user.first_name,
-        last_name: user.last_name,
         nickname: user.nickname,
-        email: user.email,
-        profile_img: user.profile_img,
-        xp: user.xp,
-        level_id: user.level_id,
-        title: user.title,
-        incomes: user.incomes,
-        expenses: user.expenses,
-        balance: user.balance
+        email: user.email
     }
 
     return new Promise((resolve, reject) => {
