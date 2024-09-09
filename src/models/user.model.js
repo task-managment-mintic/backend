@@ -39,7 +39,7 @@ export const User = sequelize.define('users', {
         defaultValue: 0
     },
     level_id: {
-        type: DataTypes.UUID,
+        type: DataTypes.INTEGER,
         references: {
             model: 'levels',
             key: 'id'
