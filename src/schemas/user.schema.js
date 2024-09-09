@@ -23,9 +23,9 @@ export const userSchema = z.object({
         .regex(/[\W_]/, { message: 'La contraseña debe contener al menos un carácter especial.' }),
     profile_img: z.string().optional(),
     xp: z.number().optional(),
-    level: z.number().optional(),
-    title: z.string().optional(),
-    incomes: z.number().optional(),
-    expenses: z.number().optional(),
-    balance: z.number().optional()
+    level_id: z.string().uuid('Nivel no válido'),
+    title: z.string().default('Iniciado'),
+    incomes: z.bigint().default(0),
+    expenses: z.bigint().default(0),
+    balance: z.bigint().default(0)
 })

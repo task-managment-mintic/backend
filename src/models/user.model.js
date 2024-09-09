@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize'
 import { sequelize } from '../db/db.js'
+import { Level } from './level.model.js'
 
 export const User = sequelize.define('users', {
     id: {
@@ -37,9 +38,12 @@ export const User = sequelize.define('users', {
         type: DataTypes.BIGINT,
         defaultValue: 0
     },
-    level: {
-        type: DataTypes.INTEGER,
-        defaultValue: 1
+    level_id: {
+        type: DataTypes.UUID,
+        references: {
+            model: 'levels',
+            key: 'id'
+        }
     },
     title: {
         type: DataTypes.STRING,
@@ -60,3 +64,6 @@ export const User = sequelize.define('users', {
 }, {
     timestamps: true
 })
+
+Level.hasMany(User, { foreignKey: 'level_id' })
+User.belongsTo(Level, { foreignKey: 'level_id' })

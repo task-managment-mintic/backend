@@ -1,5 +1,5 @@
 import { DataTypes } from 'sequelize'
-import { sequelize } from '../database/database.js'
+import { sequelize } from '../db/db.js'
 
 export const Level = sequelize.define('levels', {
     id: {
