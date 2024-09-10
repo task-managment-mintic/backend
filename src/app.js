@@ -4,6 +4,7 @@ import cors from 'cors'
 import helmet from 'helmet'
 
 import userRoutes from './routes/user.routes.js'
+import hobbyRoutes from './routes/hobby.routes.js'
 
 const app = express()
 
@@ -16,5 +17,6 @@ app.use(morgan('dev'))
 app.use(express.json())
 
 app.use('/api', userRoutes)
+app.use('/api', hobbyRoutes)
 
 export default app
