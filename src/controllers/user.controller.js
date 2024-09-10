@@ -132,9 +132,17 @@ export const updateAccount = async (req, res) => {
 
 export const updateProfileImg = async (req, res) => {
     const { id } = req.user
+    const { avatar } = req.body
 
     try {
-        
+        const imgUpdated = User.update(
+            { profile_img: avatar },
+            { where: { id } }
+        )
+        return res.status(200).json({
+            message: 'Imagen actualizada',
+            user: imgUpdated
+        })
     } catch (error) {
         return res.status(500).json({ message: 'Error updating profile image' })
     }
