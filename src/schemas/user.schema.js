@@ -22,3 +22,16 @@ export const createSchema = z.object({
     expenses: z.number().default(0),
     balance: z.number().default(0)
 })
+
+export const updateSchema = z.object({
+    first_name: z.string()
+        .regex(nameCondition, 'El nombre solo puede contener letras')
+        .optional(),
+    last_name: z.string()
+        .regex(nameCondition, 'El apellido solo puede contener letras')
+        .optional(),
+    nickname: z.string().optional(),
+    email: z.string()
+        .email('Formato de correo incorrecto')
+        .optional()
+})

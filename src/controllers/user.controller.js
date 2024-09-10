@@ -93,3 +93,59 @@ export const getProfile = async (req, res) => {
         return res.status(500).json({ message: 'Error getting profile' })
     }
 }
+
+export const updateAccount = async (req, res) => {
+    const { id } = req.user
+    const { first_name, last_name, email, nickname } = req.body
+
+    try {
+        const user = await User.findByPk(id)
+        if (!user) return res.status(404).json({ message: 'Usuario no encontrado' })
+        
+        if (nickname && nickname !== '') {
+            const existingNick = await User.findOne({ where: { nickname } })
+            if (existingNick && existingNick.id !== id) return res.status(404).json({ message: 'El nombre de usuario ya está en uso' }) 
+        }
+        
+        if (email && email !== '') {
+            const existingEmail = await User.findOne({ where: { email } })
+            if (existingEmail && existingEmail.id !== id) return res.status(404).json({ message: 'El correo ya está en uso' })
+        }
+        
+        user.first_name = first_name || user.first_name
+        user.last_name = last_name || user.last_name
+        user.email = email || user.email
+        user.nickname = nickname || user.nickname
+
+        const updatedUser = await user.save()
+
+        return res.status(200).json({
+            message: 'Datos actualizados',
+            user: updatedUser
+        })
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Error updating account' })
+    }
+}
+
+export const updateProfileImg = async (req, res) => {
+    const { id } = req.user
+
+    try {
+        
+    } catch (error) {
+        return res.status(500).json({ message: 'Error updating profile image' })
+    }
+}
+
+export const updatePassword = async (req, res) => {
+    const { id } = req.user
+
+    try {
+        
+    } catch (error) {
+        return res.status(500).json({ message: 'Error updating password' })
+    }
+}
