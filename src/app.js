@@ -3,6 +3,8 @@ import morgan from 'morgan'
 import cors from 'cors'
 import helmet from 'helmet'
 
+import userRoutes from './routes/user.routes.js'
+
 const app = express()
 
 app.use(cors({
@@ -12,5 +14,7 @@ app.use(cors({
 app.use(helmet())
 app.use(morgan('dev'))
 app.use(express.json())
+
+app.use('/api', userRoutes)
 
 export default app

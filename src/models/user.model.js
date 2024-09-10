@@ -32,14 +32,14 @@ export const User = sequelize.define('users', {
     },
     profile_img: {
         type: DataTypes.STRING,
-        defaultValue: 'default.png'
+        defaultValue: 'avatars/default-img-avatar-tskmng-18'
     },
     xp: {
         type: DataTypes.BIGINT,
         defaultValue: 0
     },
     level_id: {
-        type: DataTypes.UUID,
+        type: DataTypes.INTEGER,
         references: {
             model: 'levels',
             key: 'id'
