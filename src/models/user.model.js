@@ -60,6 +60,10 @@ export const User = sequelize.define('users', {
     balance: {
         type: DataTypes.BIGINT,
         defaultValue: 0
+    }, 
+    is_new: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
     }
 }, {
     timestamps: true
