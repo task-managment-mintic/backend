@@ -14,15 +14,6 @@ export const createAccount = async (req, res) => {
     const errors = []
 
     try {
-        if (password.length < 8 || password.length > 20) {
-            errors.push('La contraseña debe tener entre 8 y 20 caracteres')
-        }
-
-        const pwdRegex = /^(?=.*[a-zA-Z])(?=.*\d).+$/
-        if (!pwdRegex.test(password)) {
-            errors.push('La contraseña debe contener al menos una letra y un número')
-        }
-
         const pwdHash = await bcrypt.hash(password, 10)
         const newUser = await User.create({
             first_name,
@@ -40,7 +31,20 @@ export const createAccount = async (req, res) => {
             user: newUser
         })
     } catch (error) {
-        return res.status(500).json({ message: 'Error creating account' })
+        if (error.name === 'SequelizeValidationError') {
+            const errs = error.errors.map(err => err)
+            errors.push(...errs)
+        } else {
+            return res.status(500).json({
+                message: 'Error interno al validar',
+                errors: error
+            })
+        }
+
+        return res.status(400).json({
+            message: 'Error en la validación',
+            errors: errors
+        })
     }
 }
 

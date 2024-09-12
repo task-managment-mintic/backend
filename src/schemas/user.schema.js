@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 const nameCondition = /[a-zA-ZáéíóúÁÉÍÓÚ\s]+$/
 const emailCondition = /\S+@\S+\.\S+/
+const pwdCondition = /^(?=.*[a-zA-Z])(?=.*\d).+$/
 
 export const createSchema = z.object({
     first_name: z.string().superRefine((val, ctx) => {
@@ -30,8 +31,7 @@ export const createSchema = z.object({
             })
         }
     }),
-    nickname: z
-        .string()
+    nickname: z.string()
         .min(1, 'El nombre de usuario es obligatorio'),
     email: z.string().superRefine((val, ctx) => {
         if (!val) {
@@ -46,6 +46,17 @@ export const createSchema = z.object({
             })
         }
     }),
+    password: z.string()
+        .min(8, { message: 'La contraseña debe tener al menos 8 caracteres' })
+        .max(20, { message: 'La contraseña no debe tener más de 20 caracteres' })
+        .superRefine((val, ctx) => {
+            if (!pwdCondition.test(val)) {
+                ctx.addIssue({
+                    message: 'La contraseña debe contener al menos una letra y un número',
+                    path: ['password']
+                })
+            }
+        }),
     profile_img: z.string().default('default.png'),
     xp: z.number().default(0),
     title: z.string().default('Iniciado'),

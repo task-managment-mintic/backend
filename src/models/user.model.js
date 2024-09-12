@@ -18,13 +18,27 @@ export const User = sequelize.define('users', {
     },
     nickname: {
         type: DataTypes.STRING,
-        unique: true,
-        allowNull: false
+        allowNull: false,
+        validate: {
+            isUnique: async nickname => {
+                const existingNick = await User.findOne({ where: { nickname } })
+                if (existingNick) {
+                    throw new Error('El nombre de usuario ya está en uso')
+                }
+            }
+        }
     },
     email: {
         type: DataTypes.STRING,
-        unique: true,
-        allowNull: false
+        allowNull: false,
+        validate: {
+            isUnique: async email => {
+                const existingEmail = await User.findOne({ where: { email } })
+                if (existingEmail) {
+                    throw new Error('El correo ya está en uso')
+                }
+            }
+        }
     },
     password: {
         type: DataTypes.STRING,
