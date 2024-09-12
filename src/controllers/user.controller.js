@@ -69,11 +69,15 @@ export const loginAccount = async (req, res) => {
         if (!isMatch) return res.status(400).json({ message: 'Contraseña incorrecta' })
         
         const token = await createAccessToken(user)
-        res.setHeader('Authorization', token)
+        res.cookie('authorization', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict'
+        })
+        // res.setHeader('Authorization', token)
         return res.status(200).json({
             message: 'Inicio de sesión exitoso',
-            user: user,
-            token: token
+            user: user
         })
     } catch (error) {
         return res.status(500).json({ message: 'Error creating account' })
