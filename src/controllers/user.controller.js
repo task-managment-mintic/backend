@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs'
 import { User } from '../models/user.model.js'
 import { Op } from 'sequelize'
 import { createAccessToken } from '../libs/jwt.js'
+import { Level } from '../models/level.model.js'
 
 export const createAccount = async (req, res) => {
     const {
@@ -69,15 +70,11 @@ export const loginAccount = async (req, res) => {
         if (!isMatch) return res.status(400).json({ message: 'Contraseña incorrecta' })
         
         const token = await createAccessToken(user)
-        res.cookie('authorization', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict'
-        })
-        // res.setHeader('Authorization', token)
+        res.setHeader('Authorization', token)
         return res.status(200).json({
             message: 'Inicio de sesión exitoso',
-            user: user
+            user: user,
+            token: token
         })
     } catch (error) {
         return res.status(500).json({ message: 'Error creating account' })
@@ -93,9 +90,22 @@ export const getProfile = async (req, res) => {
         })
         if (!user) return res.status(404).json({ message: ' El usuario no existe' })
         
+        const level = await Level.findOne({ where: { id: user.level_id } })
+        if (!level) return res.status(404).json({ message: 'Nivel no encontrado' })
+        
+        const nextLevel = await Level.findOne({ where: { level_num: level.level_num + 1 } })
+
+        console.log(`User: ${user}`)
+        console.log(`level: ${level.level_num}`)
+        console.log(`xpRequired: ${nextLevel.xp_required}`)
+        
         return res.status(200).json({
             message: 'Solicitud exitosa',
-            user: user
+            user: {
+                ...user,
+                level_num: level.level_num,
+                xp_required: nextLevel ? nextLevel.xp_required : 'N/A'
+            }
         })
     } catch (error) {
         return res.status(500).json({ message: 'Error getting profile' })
