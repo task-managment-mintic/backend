@@ -34,3 +34,22 @@ export const getHobbies = async (req, res) => {
         return res.status(500).json({ message: 'Error getting hobbies' })
     }
 }
+
+export const getHobby = async (req, res) => {
+    const { id } = req.params
+    const user_id = req.user.id
+
+    try {
+        const hobby = await Hobby.findByPk(id)
+        if (!hobby) return res.status(404).json({ message: 'Hobby no encontrado' })
+        
+        if (hobby.user_id !== user_id) return res.status(403).json({ message: 'No tienes permiso para ver este hobby' })
+        
+        return res.status(200).json({
+            message: 'Solicitud exitosa',
+            hobby: hobby
+        })
+    } catch (error) {
+        return res.status(500).json({ message: 'Error getting hobby' })
+    }
+}
