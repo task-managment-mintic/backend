@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { createAccount, getProfile, loginAccount, updateAccount, updatePassword, updateProfileImg } from '../controllers/user.controller.js'
+import { createAccount, getProfile, loginAccount, updateAccount, updateIsNew, updatePassword, updateProfileImg } from '../controllers/user.controller.js'
 import { validateSchema } from '../middlewares/validator.js'
 import { createSchema, updateSchema } from '../schemas/user.schema.js'
 import { authRequired } from '../middlewares/checkToken.js'
@@ -12,5 +12,6 @@ router.get('/user', authRequired, getProfile)
 router.put('/user', authRequired, validateSchema(updateSchema), updateAccount)
 router.put('/user/img', authRequired, updateProfileImg)
 router.put('/user/pwd', authRequired, updatePassword)
+router.put('/user/new', authRequired, updateIsNew)
 
 export default router

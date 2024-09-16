@@ -188,3 +188,21 @@ export const updatePassword = async (req, res) => {
         return res.status(500).json({ message: 'Error updating password' })
     }
 }
+
+export const updateIsNew = async (req, res) => {
+    const { id } = req.user
+    
+    try {
+        const userUpdated = await User.update(
+            { is_new: false },
+            { where: { id: id }}
+        )
+        return res.status(200).json({
+            message: 'Success',
+            user: userUpdated.is_new
+        })    
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Error updating is_new' })
+    }
+}
