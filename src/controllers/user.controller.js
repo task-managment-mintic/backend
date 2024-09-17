@@ -94,10 +94,6 @@ export const getProfile = async (req, res) => {
         if (!level) return res.status(404).json({ message: 'Nivel no encontrado' })
         
         const nextLevel = await Level.findOne({ where: { level_num: level.level_num + 1 } })
-
-        console.log(`User: ${user}`)
-        console.log(`level: ${level.level_num}`)
-        console.log(`xpRequired: ${nextLevel.xp_required}`)
         
         return res.status(200).json({
             message: 'Solicitud exitosa',
@@ -136,10 +132,13 @@ export const updateAccount = async (req, res) => {
         user.nickname = nickname || user.nickname
 
         const updatedUser = await user.save()
+        const findUpdatedUser = await User.findByPk(updatedUser.id, {
+            attributes: { exclude: ['id', 'password'] }
+        })
 
         return res.status(200).json({
             message: 'Datos actualizados',
-            user: updatedUser
+            user: findUpdatedUser
         })
 
     } catch (error) {
