@@ -167,21 +167,40 @@ export const updateProfileImg = async (req, res) => {
 
 export const updatePassword = async (req, res) => {
     const { id } = req.user
-    const { currentPassword, password } = req.body
+    const { current_password, password, confirm_password } = req.body
+    const errors = []
 
     try {
         const user = await User.findByPk(id)
         if (!user) return res.status(404).json({ messsage: 'Usuario no existe' })
         
-        const isMatch = await bcrypt.compare(currentPassword, user.password)
-        if (!isMatch) return res.status(400).json({ message: 'Contraseña incorrecta' })
+        if (!current_password || !confirm_password || !password) {
+            return res.status(404).json({ message: 'Campos vacíos' })
+        }
+        
+        const isMatch = await bcrypt.compare(current_password, user.password)
+
+        if (!isMatch) {
+            errors.push('Contraseña incorrecta')
+        }
+        
+        if (current_password === password) {
+            errors.push('La nueva contraseña no puede ser igual a la anterior')
+        }
+        
+        if (password !== confirm_password) {
+            errors.push('Las contraseñas no coinciden')
+        }
+
+        if (errors.length > 0) {
+            return res.status(400).json({ errors })
+        }
         
         const newPwdHash = await bcrypt.hash(password, 10)
         user.password = newPwdHash
-        const userUpdated = user.save()
+        await user.save()
         return res.status(200).json({
-            message: 'La contraseña ha sido actualizada',
-            user: userUpdated
+            message: 'La contraseña ha sido actualizada'
         })
     } catch (error) {
         return res.status(500).json({ message: 'Error updating password' })
