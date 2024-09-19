@@ -66,14 +66,51 @@ export const createSchema = z.object({
 })
 
 export const updateSchema = z.object({
-    first_name: z.string()
-        .regex(nameCondition, 'El nombre solo puede contener letras')
-        .optional(),
-    last_name: z.string()
-        .regex(nameCondition, 'El apellido solo puede contener letras')
-        .optional(),
-    nickname: z.string().optional(),
-    email: z.string()
-        .email('Formato de correo incorrecto')
-        .optional()
+    first_name: z.string().superRefine((val, ctx) => {
+        if (!val) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'El nombre es obligatorio'
+            })
+        } else if (!nameCondition.test(val)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'El nombre solo puede contener letras'
+            })
+        }
+    }),
+    last_name: z.string().superRefine((val, ctx) => {
+        if (!val) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'El apellido es obligatorio'
+            })
+        } else if (!nameCondition.test(val)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'El apellido solo puede contener letras'
+            })
+        }
+    }),
+    nickname: z.string().superRefine((val, ctx) => {
+        if (!val) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'El nombre de usuario es obligatorio'
+            })
+        }
+    }),
+    email: z.string().superRefine((val, ctx) => {
+        if (!val) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'El correo electrónico es obligatorio'
+            })
+        } else if (!emailCondition.test(val)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'Formato de correo incorrecto'
+            })
+        }
+    })
 })
