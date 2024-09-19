@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs'
 import { User } from '../models/user.model.js'
 import { Op } from 'sequelize'
 import { createAccessToken } from '../libs/jwt.js'
+import { Level } from '../models/level.model.js'
 
 export const createAccount = async (req, res) => {
     const {
@@ -9,18 +10,24 @@ export const createAccount = async (req, res) => {
         last_name,
         nickname,
         email,
-        password
+        password,
+        confirm_password
     } = req.body
     const errors = []
 
     try {
-        if (password.length < 8 || password.length > 20) {
-            errors.push('La contraseña debe tener entre 8 y 20 caracteres')
+        console.log('Inicialización con errores: ', errors)
+        if (!confirm_password) {
+            errors.push({ message: 'Debes escribir nuevamente la contraseña' })
         }
 
-        const pwdRegex = /^(?=.*[a-zA-Z])(?=.*\d).+$/
-        if (!pwdRegex.test(password)) {
-            errors.push('La contraseña debe contener al menos una letra y un número')
+        if (password !== confirm_password) {
+            errors.push({ message: 'Las contraseñas no coinciden' })
+        }
+
+        if (errors.length > 0) {
+            console.log('Errores: ', errors.map(err => err))
+            return res.status(400).json({ errors })
         }
 
         const pwdHash = await bcrypt.hash(password, 10)
@@ -40,7 +47,20 @@ export const createAccount = async (req, res) => {
             user: newUser
         })
     } catch (error) {
-        return res.status(500).json({ message: 'Error creating account' })
+        if (error.name === 'SequelizeValidationError') {
+            const errs = error.errors.map(err => err)
+            errors.push(...errs)
+        } else {
+            return res.status(500).json({
+                message: 'Error interno al validar',
+                errors: error
+            })
+        }
+
+        return res.status(400).json({
+            message: 'Error en la validación',
+            errors: errors
+        })
     }
 }
 
@@ -85,9 +105,18 @@ export const getProfile = async (req, res) => {
         })
         if (!user) return res.status(404).json({ message: ' El usuario no existe' })
         
+        const level = await Level.findOne({ where: { id: user.level_id } })
+        if (!level) return res.status(404).json({ message: 'Nivel no encontrado' })
+        
+        const nextLevel = await Level.findOne({ where: { level_num: level.level_num + 1 } })
+        
         return res.status(200).json({
             message: 'Solicitud exitosa',
-            user: user
+            user: {
+                ...user,
+                level_num: level.level_num,
+                xp_required: nextLevel ? nextLevel.xp_required : 'N/A'
+            }
         })
     } catch (error) {
         return res.status(500).json({ message: 'Error getting profile' })
@@ -118,10 +147,13 @@ export const updateAccount = async (req, res) => {
         user.nickname = nickname || user.nickname
 
         const updatedUser = await user.save()
+        const findUpdatedUser = await User.findByPk(updatedUser.id, {
+            attributes: { exclude: ['id', 'password'] }
+        })
 
         return res.status(200).json({
             message: 'Datos actualizados',
-            user: updatedUser
+            user: findUpdatedUser
         })
 
     } catch (error) {
@@ -132,41 +164,82 @@ export const updateAccount = async (req, res) => {
 
 export const updateProfileImg = async (req, res) => {
     const { id } = req.user
-    const { avatar } = req.body
+    const { profile_img } = req.body
 
     try {
-        const imgUpdated = User.update(
-            { profile_img: avatar },
+        const [updatedRows] = await User.update(
+            { profile_img },
             { where: { id } }
         )
+        if (updatedRows === 0) return res.status(400).json({
+            message: 'Error al actualizar'
+        })
+        
         return res.status(200).json({
-            message: 'Imagen actualizada',
-            user: imgUpdated
+            message: 'Imagen actualizada'
         })
     } catch (error) {
-        return res.status(500).json({ message: 'Error updating profile image' })
+        console.log(error)
+        return res.status(500).json({ message: 'Error updating profile image', error })
     }
 }
 
 export const updatePassword = async (req, res) => {
     const { id } = req.user
-    const { currentPassword, password } = req.body
+    const { current_password, password, confirm_password } = req.body
+    const errors = []
 
     try {
         const user = await User.findByPk(id)
         if (!user) return res.status(404).json({ messsage: 'Usuario no existe' })
         
-        const isMatch = await bcrypt.compare(currentPassword, user.password)
-        if (!isMatch) return res.status(400).json({ message: 'Contraseña incorrecta' })
+        if (!current_password || !confirm_password || !password) {
+            return res.status(404).json({ message: 'Campos vacíos' })
+        }
+        
+        const isMatch = await bcrypt.compare(current_password, user.password)
+
+        if (!isMatch) {
+            errors.push('Contraseña incorrecta')
+        }
+        
+        if (current_password === password) {
+            errors.push('La nueva contraseña no puede ser igual a la anterior')
+        }
+        
+        if (password !== confirm_password) {
+            errors.push('Las contraseñas no coinciden')
+        }
+
+        if (errors.length > 0) {
+            return res.status(400).json({ errors })
+        }
         
         const newPwdHash = await bcrypt.hash(password, 10)
         user.password = newPwdHash
-        const userUpdated = user.save()
+        await user.save()
         return res.status(200).json({
-            message: 'La contraseña ha sido actualizada',
-            user: userUpdated
+            message: 'La contraseña ha sido actualizada'
         })
     } catch (error) {
         return res.status(500).json({ message: 'Error updating password' })
+    }
+}
+
+export const updateIsNew = async (req, res) => {
+    const { id } = req.user
+    
+    try {
+        const userUpdated = await User.update(
+            { is_new: false },
+            { where: { id: id }}
+        )
+        return res.status(200).json({
+            message: 'Success',
+            user: userUpdated.is_new
+        })    
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Error updating is_new' })
     }
 }
