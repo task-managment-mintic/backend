@@ -46,7 +46,7 @@ export const User = sequelize.define('users', {
     },
     profile_img: {
         type: DataTypes.STRING,
-        defaultValue: 'avatars/default-img-avatar-tskmng-18'
+        defaultValue: 'v1725937229/avatars/default-img-avatar-tskmng-18.jpg'
     },
     xp: {
         type: DataTypes.BIGINT,
