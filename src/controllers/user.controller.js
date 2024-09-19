@@ -10,11 +10,26 @@ export const createAccount = async (req, res) => {
         last_name,
         nickname,
         email,
-        password
+        password,
+        confirm_password
     } = req.body
     const errors = []
 
     try {
+        console.log('Inicialización con errores: ', errors)
+        if (!confirm_password) {
+            errors.push({ message: 'Debes escribir nuevamente la contraseña' })
+        }
+
+        if (password !== confirm_password) {
+            errors.push({ message: 'Las contraseñas no coinciden' })
+        }
+
+        if (errors.length > 0) {
+            console.log('Errores: ', errors.map(err => err))
+            return res.status(400).json({ errors })
+        }
+
         const pwdHash = await bcrypt.hash(password, 10)
         const newUser = await User.create({
             first_name,
